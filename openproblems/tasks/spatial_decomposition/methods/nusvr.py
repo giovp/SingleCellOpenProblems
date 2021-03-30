@@ -2,6 +2,7 @@ from ....tools.decorators import method
 from ....tools.utils import check_version
 from ._utils import normalize_coefficients
 from ._utils import obs_means
+from scipy.sparse import issparse
 from sklearn.svm import NuSVR
 
 import numpy as np
@@ -16,21 +17,26 @@ import pandas as pd
     code_url="https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVR.html",
     code_version=check_version("scikit-learn"),
 )
-def stereoscope_raw(adata):
+def nusvr_sklearn(adata):
     adata_sc = adata.uns["sc_reference"].copy()
     labels = adata_sc.obs["label"].cat.categories
     adata_means = obs_means(adata_sc, "label")
 
-    X = adata_means.X.T
-    y = adata.X.T.toarray()
+    if issparse(adata.X):
+        X = adata_means.X.T.toarray()
+        y = adata.X.T.toarray()
+    else:
+        X = adata_means.X.T
+        y = adata.X.T
     res = np.zeros((y.shape[1], X.shape[1]))  # (voxels,cells)
     for i in range(y.shape[1]):
         model = NuSVR(kernel="linear")
         model.fit(X, y[:, i])
-        res[i] = model.coef_s
+        res[i] = model.coef_
 
     res_prop = normalize_coefficients(res)
 
-    adata.obsm["proportions_pred"] = pd.DataFrame(res_prop, columns=labels)
-
+    adata.obsm["proportions_pred"] = pd.DataFrame(
+        res_prop, columns=labels, index=adata.obs_names
+    )
     return adata
