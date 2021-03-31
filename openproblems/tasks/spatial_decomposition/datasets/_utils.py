@@ -39,7 +39,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
                     allocation[j], profile_mean.X[j, :], size=1
                 )[0]
 
-                bead_to_gene_matrix[bead_index, :] += gene_exp.copy()
+                bead_to_gene_matrix[bead_index, :] += gene_exp
     elif sim_type == "cell":
         # generate from cells
         # assign beads to actual cells
@@ -69,7 +69,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
                 gene_exp = np.random.multinomial(
                     allocation[j], X_norm_prof[cell_index, :], size=1
                 )[0]
-                bead_to_gene_matrix[bead_index, :] += gene_exp.copy()
+                bead_to_gene_matrix[bead_index, :] += gene_exp
 
     bead_barcodes = np.array([generate_seq() for _ in range(num_of_beads)])
 
