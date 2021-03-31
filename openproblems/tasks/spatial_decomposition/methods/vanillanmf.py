@@ -53,12 +53,14 @@ def nmf_raw(adata):
     # Make profiles from single-cell expression 
     # dataset
     profile_mean = grouped_obs_mean(adata_sc, 'celltype')
+    X = adata.X
 
     Wa = vanila_nmf_model.fit_transform(
+        X,
         H=profile_mean.values
     )
 
     prop = Wa_norm = Wa / Wa.sum(1)[:,np.newaxis]
     adata.obsm['proportions_pred'] = prop
-    
+
     return adata
