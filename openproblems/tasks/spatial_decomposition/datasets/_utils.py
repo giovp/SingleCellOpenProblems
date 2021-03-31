@@ -40,7 +40,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
                 )[0]
 
                 bead_to_gene_matrix[bead_index, :] += gene_exp.copy()
-    else:
+    elif sim_type == "cell":
         # generate from cells
         # assign beads to actual cells
         # cell_ids with this cluster
