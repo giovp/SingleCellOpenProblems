@@ -1,35 +1,12 @@
-import anndata
+from .._utils import obs_means
+from anndata import AnnData
+
 import numpy as np
-import pandas as pd
 import random
 
 
 def generate_seq(length=14):
     return "".join(random.choice("CGTA") for _ in range(length))
-
-
-def grouped_obs_mean(adata, group_key, layer=None):
-    if layer is not None:
-
-        def getX(x):
-            return x.layers[layer]
-
-    else:
-
-        def getX(x):
-            return x.X
-
-    grouped = adata.obs.groupby(group_key)
-    out = pd.DataFrame(
-        np.zeros((adata.shape[1], len(grouped)), dtype=np.float64),
-        columns=list(grouped.groups.keys()),
-        index=adata.var_names,
-    )
-
-    for group, idx in grouped.indices.items():
-        X = getX(adata[idx])
-        out.loc[:, group] = np.ravel(X.mean(axis=0, dtype=np.float64))
-    return out.T
 
 
 # pass the reference data
@@ -38,7 +15,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
     n_cells = adata.n_obs
     n_types = len(set(adata.obs["label"].values))
 
-    # TODO make these arguments
+    # TODO(make these arguments)
     bead_depth = 1000
     num_of_beads = n_cells * 2
     # generate proportion values
@@ -50,7 +27,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
     # if sim_type avg
     # generate from avg profiles
     if sim_type == "avg":
-        profile_mean = grouped_obs_mean(adata, "label").values
+        profile_mean = obs_means(adata, "label")
         # run for each bead
         for bead_index in range(num_of_beads):
             allocation = np.random.multinomial(
@@ -59,7 +36,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
             true_proportion[bead_index, :] = allocation.copy()
             for j in range(n_types):
                 gene_exp = np.random.multinomial(
-                    allocation[j], profile_mean[j, :], size=1
+                    allocation[j], profile_mean.X[j, :], size=1
                 )[0]
 
                 bead_to_gene_matrix[bead_index, :] += gene_exp.copy()
@@ -96,16 +73,16 @@ def generate_synthatic_data(adata, sim_type="avg"):
 
     bead_barcodes = np.array([generate_seq() for _ in range(num_of_beads)])
 
-    sc_adata = anndata.AnnData(
+    adata_spatial = AnnData(
         bead_to_gene_matrix,
         obs=dict(obs_names=bead_barcodes),
         var=dict(var_names=adata.var_names),
     )
 
     # fake coordinates
-    sc_adata.obsm["spatial"] = np.random.random((sc_adata.shape[0], 2))
-    sc_adata.obsm["proportions_true"] = true_proportion
+    adata_spatial.obsm["spatial"] = np.random.random((adata_spatial.shape[0], 2))
+    adata_spatial.obsm["proportions_true"] = true_proportion
 
-    adata.uns["sc_reference"] = adata.copy()
+    adata_spatial.uns["sc_reference"] = adata.copy()
 
     return adata
