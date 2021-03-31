@@ -1,5 +1,4 @@
 library(Seurat)
-library(dplyr)
 
 # R base for seuratv3.py
 sce <- as.Seurat(sce, counts = "X", data = NULL)
