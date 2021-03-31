@@ -56,7 +56,8 @@ def generate_synthatic_data(adata, sim_type="avg"):
                 0, len(cells_to_sample_from_celltype[j]), num_of_beads
             )
 
-        X_norm_prof = (adata.X / adata.X.sum(1)[:, np.newaxis]).astype("float64")
+        rowSums = adata.X.sum(axis=1, keepdims=True)
+        X_norm_prof = np.divide(adata.X, rowSums, where=rowSums > 0)
         for bead_index in range(num_of_beads):
             allocation = np.random.multinomial(
                 bead_depth, props[bead_index, :], size=1
