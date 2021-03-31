@@ -1,4 +1,4 @@
-from .._utils import obs_means
+from .._utils import obs_normalize
 from anndata import AnnData
 
 import numpy as np
@@ -27,7 +27,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
     # if sim_type avg
     # generate from avg profiles
     if sim_type == "avg":
-        profile_mean = obs_means(adata, "label")
+        profile_mean = obs_normalize(adata, "label")
         # run for each bead
         for bead_index in range(num_of_beads):
             allocation = np.random.multinomial(
