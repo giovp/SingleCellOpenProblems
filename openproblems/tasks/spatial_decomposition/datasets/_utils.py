@@ -1,5 +1,6 @@
 from .._utils import obs_means
 from anndata import AnnData
+from scipy.sparse import csr_matrix
 
 import numpy as np
 import scanpy as sc
@@ -9,6 +10,12 @@ import scanpy as sc
 def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
 
     rng = np.random.default_rng(42)
+
+    print(type(adata.X))
+    adata.obs["label"] = adata.obs.label.astype("category")
+
+    if isinstance(adata.X, csr_matrix):
+        adata.X = adata.X.todense()
 
     n_genes = adata.shape[1]
     n_cells = adata.shape[0]
@@ -50,12 +57,14 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
         # Actual cells assigned randomly
         cell_association = np.zeros((num_of_beads, n_types)).astype(np.int)
         for j in range(n_types):
-            cell_association[:, j] = rng.randint(
-                0, len(cells_to_sample_from_celltype[j]), num_of_beads
+            cell_association[:, j] = rng.integers(
+                low=0, high=len(cells_to_sample_from_celltype[j]), size=num_of_beads
             )
 
-        rowSums = adata.X.sum(axis=1, keepdims=True)
-        X_norm_prof = np.divide(adata.X, rowSums, where=rowSums > 0)
+        counts = np.array(adata.X)
+        rowSums = counts.sum(axis=1, keepdims=True)
+        X_norm_prof = np.divide(counts, rowSums, where=rowSums > 0)
+
         for bead_index in range(num_of_beads):
             allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
             true_proportion[bead_index, :] = allocation.copy()
@@ -63,6 +72,7 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
                 cell_index = cells_to_sample_from_celltype[j][
                     cell_association[bead_index, j]
                 ]
+                print(cell_index)
                 gene_exp = rng.multinomial(
                     allocation[j], X_norm_prof[cell_index, :], size=1
                 )[0]
@@ -88,4 +98,4 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
 
     adata_spatial.uns["sc_reference"] = adata.copy()
 
-    return adata
+    return adata_spatial
