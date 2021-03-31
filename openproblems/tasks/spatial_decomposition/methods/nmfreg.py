@@ -1,41 +1,50 @@
 from ....tools.decorators import method
-from ....tools.normalize import log_cpm
 from ....tools.utils import check_version
+from scipy.optimize import nnls
+from scipy.sparse import issparse
 from sklearn.decomposition import NMF
 from sklearn.preprocessing import StandardScaler
 
-import collections
 import numpy as np
-import pandas as pd
-import scipy.optimize
-import scipy.stats
 
 
 @method(
     method_name="NMF-reg",
-    paper_name="Slide-seq: A scalable technology for measuring genome-wide expression at high spatial resolution",
-    paper_url="https://science.sciencemag.org/content/363/6434/1463",
-    paper_year=2009,
-    code_url="N/A",
-    code_version=check_version("NMF-reg"),
+    paper_name="Slide-seq: A scalable technology for measuring genome-wide expression at high spatial resolution",  # noqa: E501
+    paper_url="https://science.sciencemag.org/content/363/6434/1463",  # noqa: E501
+    paper_year=2019,
+    code_url="https://github.com/tudaga/NMFreg_tutorial",
+    code_version=check_version("nmf-reg"),
 )
 def nmfreg(adata):
-    n_types = adata.obsm["proportions_true"].size[1]
+    """NMF-reg re-implementation from https://github.com/tudaga/NMFreg_tutorial."""
+
     adata_sc = adata.uns["sc_reference"].copy()
-    factors = 30
-    projectiob_type = "l2"
+
+    n_types = adata_sc.obs["label"].cat.categories.shape[0]
+
+    factors = 30  # TODO(handle hyper params)
+    projection_type = "l2"  # TODO(handle hyper params)
 
     # Learn from reference
-    X = adata_sc.X.toarray()
+    if issparse(adata_sc.X):
+        X = adata_sc.X.toarray()
+    else:
+        X = adata_sc.X
     X_norm = X / X.sum(1)[:, np.newaxis]
     X_scaled = StandardScaler(with_mean=False).fit_transform(X_norm)
 
-    model = NMF(n_components=factors, init="random", random_state=17)
+    model = NMF(
+        n_components=factors,
+        init="random",
+        random_state=17,  # TODO(handle random_state)
+    )
     Ha = model.fit_transform(X_scaled)
     Wa = model.components_
 
     cluster_df = adata.obs[["label"]].copy()
     cluster_df.loc[:, "factor"] = np.argmax(Ha, axis=1)
+    cluster_df.loc[:, "code"] = cluster_df.label.values.codes
     factor_to_cluster_map = np.array(
         [
             np.histogram(
@@ -48,7 +57,7 @@ def nmfreg(adata):
     ).T
 
     factor_to_best_celltype = np.argmax(factor_to_cluster_map, axis=0)
-    celltype_to_best_factor = np.argmax(factor_to_cluster_map, axis=1)
+    # celltype_to_best_factor = np.argmax(factor_to_cluster_map, axis=1) # TODO(remove?)
 
     factor_to_best_celltype_matrix = np.zeros((factors, n_types))
     for i, j in enumerate(factor_to_best_celltype):
@@ -62,7 +71,7 @@ def nmfreg(adata):
 
     sc_deconv = sc_deconv / sc_deconv.sum(1)[:, np.newaxis]
 
-    # Evaluation on reference TODO: either move or delete
+    # Evaluation on reference TODO(either ove or delete)
     cluster_df.loc[:, "predicted_code"] = np.argmax(sc_deconv, axis=1)
     pos_neg_dict = {
         i: [
@@ -78,15 +87,15 @@ def nmfreg(adata):
     # Evaluation ends here
 
     # Start run on actual spatial data
-    X_sp = adata.X.toarray()
+    if issparse(adata.X):
+        X_sp = adata.X.toarray()
+    else:
+        X_sp = adata.X
     X_sp_norm = X_sp / X_sp.sum(1)[:, np.newaxis]
     X_sp_scaled = StandardScaler(with_mean=False).fit_transform(X_sp_norm)
 
     bead_prop_soln = np.array(
-        [
-            scipy.optimize.nnls(Wa.T, X_sp_scaled[b, :])[0]
-            for b in range(X_sp_scaled.shape[0])
-        ]
+        [nnls(Wa.T, X_sp_scaled[b, :])[0] for b in range(X_sp_scaled.shape[0])]
     )
     bead_prop_soln = StandardScaler(with_mean=False).fit_transform(bead_prop_soln)
     bead_prop = np.dot(bead_prop_soln, factor_to_best_celltype_matrix)

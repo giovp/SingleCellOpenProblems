@@ -1,48 +1,39 @@
 from ....tools.decorators import method
-from ....tools.normalize import log_cpm
 from ....tools.utils import check_version
+from anndata import AnnData
+from scipy.sparse import issparse
 from sklearn.decomposition import NMF
 
 import numpy as np
-import pandas as pd
+
+
+def obs_means(adata: AnnData, cluster_key: str) -> AnnData:
+    """Return means over observation key."""
+
+    labels = adata.obs[cluster_key].cat.categories
+    means = np.empty((labels.shape[0], adata.shape[1]))
+    for i, lab in enumerate(labels):
+        means[i, :] = adata[adata.obs[cluster_key] == lab].X.mean(axis=0).flatten()
+    adata_means = AnnData(means)
+    adata_means.obs_names = labels
+    adata_means.var_names = adata.var_names
+
+    return adata_means
 
 
 @method(
     method_name="Non-Negative Matrix Factorization (NMF).",
-    paper_name="Fast local algorithms for large scale nonnegative matrix and tensor factorizations",
-    paper_url="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.214.6398&rep=rep1&type=pdf",
+    paper_name="Fast local algorithms for large scale nonnegative matrix and tensor factorizations",  # noqa: E501
+    paper_url="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.214.6398&rep=rep1&type=pdf",  # noqa: E501
     paper_year=2009,
-    code_url="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.NMF.html",
+    code_url="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.NMF.html",  # noqa: E501
     code_version=check_version("scikit-learn"),
 )
-# Used from https://github.com/theislab/scanpy/issues/181#issuecomment-534867254
-def grouped_obs_mean(adata, group_key, layer=None):
-    if layer is not None:
+def nmf(adata):
+    """NMF for spatial deconvolution."""
 
-        def getX(x):
-            return x.layers[layer]
-
-    else:
-
-        def getX(x):
-            return x.X
-
-    grouped = adata.obs.groupby(group_key)
-    out = pd.DataFrame(
-        np.zeros((adata.shape[1], len(grouped)), dtype=np.float64),
-        columns=list(grouped.groups.keys()),
-        index=adata.var_names,
-    )
-
-    for group, idx in grouped.indices.items():
-        X = getX(adata[idx])
-        out.loc[:, group] = np.ravel(X.mean(axis=0, dtype=np.float64))
-    return out.T
-
-
-def nmf_raw(adata):
-    n_types = adata.obsm["proportions_true"].size[1]
     adata_sc = adata.uns["sc_reference"].copy()
+    n_types = adata_sc.obs["label"].cat.categories.shape[0]
 
     vanila_nmf_model = NMF(
         n_components=n_types,
@@ -51,17 +42,22 @@ def nmf_raw(adata):
         max_iter=4000,
         alpha=0.1,
         init="custom",
-        random_state=17,
+        random_state=17,  # TODO(handle random_state)
     )
 
-    # Make profiles from single-cell expression
-    # dataset
-    profile_mean = grouped_obs_mean(adata_sc, "celltype")
-    X = adata.X
+    # Make profiles from single-cell expression dataset
+    adata_means = obs_means(adata_sc, "label")
 
-    Wa = vanila_nmf_model.fit_transform(X, H=profile_mean.values)
+    if issparse(adata.X):
+        X = adata.X.toarray()
+    else:
+        X = adata.X
 
-    prop = Wa_norm = Wa / Wa.sum(1)[:, np.newaxis]
+    Wa = vanila_nmf_model.fit_transform(
+        X, H=adata_means.X, W=np.ones((adata.shape[0], n_types), dtype=np.float32)
+    )
+
+    prop = Wa / Wa.sum(1)[:, np.newaxis]
     adata.obsm["proportions_pred"] = prop
 
     return adata
