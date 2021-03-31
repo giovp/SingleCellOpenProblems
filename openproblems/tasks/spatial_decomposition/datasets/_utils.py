@@ -46,7 +46,7 @@ def generate_synthatic_data(adata, sim_type="avg"):
         # cell_ids with this cluster
         cells_to_sample_from_celltype = []
         grouped = adata.obs.groupby("label")
-        for _, idx in grouped.indices.items():
+        for idx in grouped.indices.values():
             cells_to_sample_from_celltype += [idx]
 
         # Actual cells assigned randomly
