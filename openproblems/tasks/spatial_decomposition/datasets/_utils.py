@@ -79,6 +79,10 @@ def generate_synthatic_data(adata, sim_type="avg"):
         var=dict(var_names=adata.var_names),
     )
 
+    true_proportion = true_proportion / true_proportion.sum(1)[:, np.newaxis].astype(
+        "float64"
+    )
+
     # fake coordinates
     adata_spatial.obsm["spatial"] = np.random.random((adata_spatial.shape[0], 2))
     adata_spatial.obsm["proportions_true"] = true_proportion
