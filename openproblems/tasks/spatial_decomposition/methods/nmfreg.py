@@ -36,7 +36,7 @@ def nmfreg(adata):
     Ha = model.fit_transform(X_scaled)
     Wa = model.components_
 
-    cluster_df = pd.DataFrame(adata_sc.obs['label'], columns=['label'])
+    cluster_df = adata.obs[['label']].copy()
     cluster_df.loc[:,'factor'] = np.argmax(Ha,axis=1)
     factor_to_cluster_map = np.array(
         [
