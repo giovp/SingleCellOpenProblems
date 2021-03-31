@@ -28,8 +28,6 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
     if sim_type == "avg":
         profile_mean = obs_means(adata, "label")
         sc.pp.normalize_total(profile_mean, target_sum=1, inplace=True)
-        clipped_x = np.clip(profile_mean.X.copy(), 0, 1)
-        profile_mean.X = clipped_x
         # run for each bead
         for bead_index in range(num_of_beads):
             allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
