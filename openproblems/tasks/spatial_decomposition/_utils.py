@@ -20,15 +20,7 @@ def obs_means(adata: AnnData, cluster_key: str) -> AnnData:
 
 def obs_normalize(adata: AnnData, cluster_key: str) -> AnnData:
     """Return means over observation key."""
-
-    labels = adata.obs[cluster_key].cat.categories
-    means = np.empty((labels.shape[0], adata.shape[1]))
-    for i, lab in enumerate(labels):
-        means[i, :] = adata[adata.obs[cluster_key] == lab].X.sum(axis=0).flatten()
-    adata_means = AnnData(means)
-    adata_means.obs_names = labels
-    adata_means.var_names = adata.var_names
-
+    adata_means = obs_means(adata, cluster_key)
     sc.pp.normalize_total(adata_means, target_sum=1, inplace=True)
     return adata_means
 
