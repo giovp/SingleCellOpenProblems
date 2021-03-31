@@ -38,15 +38,15 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
                 gene_exp = rng.multinomial(allocation[j], profile_mean.X[j, :], size=1)[
                     0
                 ]
+                bead_to_gene_matrix[bead_index, :] += gene_exp
 
-                bead_to_gene_matrix[bead_index, :] += gene_exp.copy()
     elif sim_type == "cell":
         # generate from cells
         # assign beads to actual cells
         # cell_ids with this cluster
         cells_to_sample_from_celltype = []
         grouped = adata.obs.groupby("label")
-        for _, idx in grouped.indices.items():
+        for idx in grouped.indices.values():
             cells_to_sample_from_celltype += [idx]
 
         # Actual cells assigned randomly
@@ -67,7 +67,7 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
                 gene_exp = rng.multinomial(
                     allocation[j], X_norm_prof[cell_index, :], size=1
                 )[0]
-                bead_to_gene_matrix[bead_index, :] += gene_exp.copy()
+                bead_to_gene_matrix[bead_index, :] += gene_exp
     else:
         raise ValueError(f"{sim_type} is not a valid key for `sim_type`.")
 
@@ -77,6 +77,10 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg"):
         bead_to_gene_matrix,
         obs=dict(obs_names=bead_barcodes),
         var=dict(var_names=adata.var_names),
+    )
+
+    true_proportion = true_proportion / true_proportion.sum(1)[:, np.newaxis].astype(
+        "float64"
     )
 
     # fake coordinates
