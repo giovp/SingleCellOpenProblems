@@ -1,7 +1,6 @@
 from anndata import AnnData
 
 import numpy as np
-import scanpy as sc
 
 
 def obs_means(adata: AnnData, cluster_key: str) -> AnnData:
@@ -15,13 +14,6 @@ def obs_means(adata: AnnData, cluster_key: str) -> AnnData:
     adata_means.obs_names = labels
     adata_means.var_names = adata.var_names
 
-    return adata_means
-
-
-def obs_normalize(adata: AnnData, cluster_key: str) -> AnnData:
-    """Return means over observation key."""
-    adata_means = obs_means(adata, cluster_key)
-    sc.pp.normalize_total(adata_means, target_sum=1, inplace=True)
     return adata_means
 
 
