@@ -1,13 +1,58 @@
 from .._utils import obs_means
 from anndata import AnnData
+from itertools import accumulate
 from scipy.sparse import csr_matrix
+from typing import Optional
+from typing import Union
 
 import numpy as np
+import random
 import scanpy as sc
 
 
+def multinomial(N: int, pvals: Union[np.ndarray, list]):
+    """Multinomial sampling function
+
+    Parameters
+    ----------
+    N : int
+        Number of draws
+    pvals : Union[np.ndarray,list]
+        probability vector
+
+    Returns:
+    -------
+    Numpy array representing a
+    sample from Mult(n,p)
+
+    """
+
+    n = len(pvals)
+    res = [0] * n
+
+    def ss(x, y):
+        return x + y
+
+    pv = list(accumulate(pvals))
+
+    for i in range(N):
+        r = random.random() * pv[-1]
+        for j in range(n):
+            if pv[j] >= r:
+                res[j] += 1
+                break
+
+    return np.array(res)
+
+
 # pass the reference data
-def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int = 42):
+def generate_synthetic_dataset(
+    adata: AnnData,
+    sim_type: str = "avg",
+    seed: int = 42,
+    bead_depth: int = 1000,
+    num_of_beads: Optional[int] = None,
+):
     """Create cell-aggregate samples for ground-truth spatial decomposition task.
 
     Parameters
@@ -28,8 +73,8 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int 
     """
 
     rng = np.random.default_rng(seed)
+    random.seed(seed)
 
-    print(type(adata.X))
     adata.obs["label"] = adata.obs.label.astype("category")
 
     if isinstance(adata.X, csr_matrix):
@@ -39,9 +84,9 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int 
     n_cells = adata.shape[0]
     n_types = len(set(adata.obs["label"].values))
 
-    # TODO(make these arguments)
-    bead_depth = 1000
-    num_of_beads = n_cells * 2
+    if num_of_beads is None:
+        num_of_beads = n_cells * 2
+
     # generate proportion values
     props = rng.dirichlet(np.ones(n_types), num_of_beads)
 
@@ -55,12 +100,11 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int 
         sc.pp.normalize_total(profile_mean, target_sum=1, inplace=True)
         # run for each bead
         for bead_index in range(num_of_beads):
-            allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
+            # allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
+            allocation = multinomial(bead_depth, props[bead_index, :])
             true_proportion[bead_index, :] = allocation.copy()
             for j in range(n_types):
-                gene_exp = rng.multinomial(allocation[j], profile_mean.X[j, :], size=1)[
-                    0
-                ]
+                gene_exp = multinomial(allocation[j], profile_mean.X[j, :])
                 bead_to_gene_matrix[bead_index, :] += gene_exp
 
     elif sim_type == "cell":
@@ -82,18 +126,14 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int 
         counts = np.array(adata.X)
         rowSums = counts.sum(axis=1, keepdims=True)
         X_norm_prof = np.divide(counts, rowSums, where=rowSums > 0)
-
         for bead_index in range(num_of_beads):
-            allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
-            true_proportion[bead_index, :] = allocation.copy()
+            allocation = multinomial(bead_depth, props[bead_index, :])
+            true_proportion[bead_index, :] = allocation
             for j in range(n_types):
                 cell_index = cells_to_sample_from_celltype[j][
                     cell_association[bead_index, j]
                 ]
-                print(cell_index)
-                gene_exp = rng.multinomial(
-                    allocation[j], X_norm_prof[cell_index, :], size=1
-                )[0]
+                gene_exp = multinomial(allocation[j], X_norm_prof[cell_index, :])
                 bead_to_gene_matrix[bead_index, :] += gene_exp
     else:
         raise ValueError(f"{sim_type} is not a valid key for `sim_type`.")
