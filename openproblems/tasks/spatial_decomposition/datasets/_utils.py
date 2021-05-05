@@ -1,16 +1,14 @@
 from .._utils import obs_means
 from anndata import AnnData
-from itertools import accumulate
 from scipy.sparse import csr_matrix
 from typing import Optional
-from typing import Union
 
 import numpy as np
 import random
 import scanpy as sc
 
 
-def multinomial(N: int, pvals: Union[np.ndarray, list]):
+def multinomial(N: int, pvals: np.array):
     """Multinomial sampling function
 
     Parameters
@@ -26,23 +24,18 @@ def multinomial(N: int, pvals: Union[np.ndarray, list]):
     sample from Mult(n,p)
 
     """
-
     n = len(pvals)
-    res = [0] * n
-
-    def ss(x, y):
-        return x + y
-
-    pv = list(accumulate(pvals))
+    res = np.zeros(n)
+    pv = np.cumsum(pvals)
 
     for i in range(N):
-        r = random.random() * pv[-1]
+        r = np.random.random() * pv[-1]
         for j in range(n):
             if pv[j] >= r:
                 res[j] += 1
                 break
 
-    return np.array(res)
+    return res
 
 
 # pass the reference data
