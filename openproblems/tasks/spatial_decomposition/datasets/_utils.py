@@ -1,147 +1,136 @@
 from .._utils import obs_means
 from anndata import AnnData
 from scipy.sparse import csr_matrix
+from typing import Sequence, Union, Dict
 
 import numpy as np
 import scanpy as sc
+import anndata as ad
+import pandas as pd
 
 
-def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int = 42):
+def generate_synthetic_dataset(
+    adata: ad.AnnData,
+    type_column: str = "label",
+    alpha: Union[float, Sequence] = 1.0,
+    n_obs: int = 1000,
+    cell_lb: int = 10,
+    cell_ub: int = 30,
+    umi_lb: int = 1000,
+    umi_ub: int = 5000,
+    seed: int = 42,
+) -> ad.AnnData:
+
     """Create cell-aggregate samples for ground-truth spatial decomposition task.
 
     Parameters
     ----------
-    adata : AnnData
+    adata: AnnData
         Anndata object.
-    sim_type : str
-        Simulation type: either average `'avg'` or per cell `'cell'`.
+    type_column: str
+        name of column in `adata.obs` where cell type labels are gives
+    alpha: Union[float,Sequence]
+        alpha value in dirichlet distribution. If single number then all alpha_i values
+        will be set to this value. Default value is 1.
+    n_obs: int
+        number of spatial observations to generate. Default value is 1000.
+    cell_lb: int
+        lower bound for number of cells at each spot. Default value is 10.
+    cell_ub: int
+        upper bound for number of cells at each spot. Default value is 30.
+    umi_lb: int
+        lower bound for number of UMIs at each spot. Default value is 10.
+    umi_ub: int
+        upper bound for number of UMIs at each spot. Default value is 30.
     seed: int
         Seed for rng.
 
     Returns
     -------
     AnnData with:
-        - `adata_spatial.obsm["proportions_true"]`: true proportion values.
         - `adata_spatial.X`: simulated counts (aggregate of sc dataset).
         - `adata_spatial.uns["sc_reference"]`: original sc adata for reference.
+        - `adata_spatial.obsm["proportions_true"]`: true proportion values.
+        - `adata_spatial.obsm["n_cells"]`: number of cells from each type at every location
+        - `adata_spatial.obs["proportions_true"]`: total number of cells at each location
 
     The cell type labels are stored in adata_sc.obs["label"].
     """
-
-
-
-# pass the reference data
-def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int = 42):
-    """Create cell-aggregate samples for ground-truth spatial decomposition task.
-
-    Parameters
-    ----------
-    adata : AnnData
-        Anndata object.
-    sim_type : str
-        Simulation type: either average `'avg'` or per cell `'cell'`.
-    seed: int
-        Seed for rng.
-
-    Returns
-    -------
-    AnnData with:
-        - `adata_spatial.obsm["proportions_true"]`: true proportion values.
-        - `adata_spatial.X`: simulated counts (aggregate of sc dataset).
-        - `adata_spatial.uns["sc_reference"]`: original sc adata for reference.
-
-    The cell type labels are stored in adata_sc.obs["label"].
-    """
-
     rng = np.random.default_rng(seed)
 
-    adata.obs["label"] = adata.obs.label.astype("category")
-
-    if isinstance(adata.X, csr_matrix):
-        adata.X = adata.X.todense()
-
+    X = adata.X
+    labels = adata.obs[type_column].values
+    uni_labs = np.unique(labels)
+    n_labs = len(uni_labs)
     n_genes = adata.shape[1]
-    n_cells = adata.shape[0]
-    n_types = len(set(adata.obs["label"].values))
 
-    # TODO(make these arguments)
-    bead_depth = 1000
-    num_of_beads = n_cells * 2
-    # generate proportion values
-    props = rng.dirichlet(np.ones(n_types), num_of_beads)
+    label_indices = dict()
 
-    true_proportion = np.zeros((num_of_beads, n_types))
-    bead_to_gene_matrix = np.zeros((num_of_beads, n_genes))
+    for label in uni_labs:
+        label_indices[label] = np.where(labels == label)[0]
 
-    # if sim_type avg
-    # generate from avg profiles
-    if sim_type == "avg":
-        profile_mean = obs_means(adata, "label")
-        sc.pp.normalize_total(profile_mean, target_sum=1, inplace=True)
-        # run for each bead
-        for bead_index in range(num_of_beads):
-            allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
-            true_proportion[bead_index, :] = allocation.copy()
-            for j in range(n_types):
-                profile_mean.X[j, :] /= (
-                    profile_mean.X[j, :].sum() + 1e-5
-                )  # trick to make sum(arr) < 1.0
-                gene_exp = rng.multinomial(allocation[j], profile_mean.X[j, :], size=1)[
-                    0
-                ]
-                bead_to_gene_matrix[bead_index, :] += gene_exp
+    if not hasattr(alpha, "__len__"):
+        alpha = np.ones(n_labs) * alpha
 
-    elif sim_type == "cell":
-        # generate from cells
-        # assign beads to actual cells
-        # cell_ids with this cluster
-        cells_to_sample_from_celltype = []
-        grouped = adata.obs.groupby("label")
-        for idx in grouped.indices.values():
-            cells_to_sample_from_celltype += [idx]
+    sp_props = rng.dirichlet(alpha, size=n_obs)
+    n_cells = rng.integers(cell_lb, cell_ub, size=n_obs)
 
-        # Actual cells assigned randomly
-        cell_association = np.zeros((num_of_beads, n_types)).astype(np.int)
-        for j in range(n_types):
-            cell_association[:, j] = rng.integers(
-                low=0, high=len(cells_to_sample_from_celltype[j]), size=num_of_beads
-            )
+    sp_x = np.zeros((n_obs, n_genes))
+    sp_p = np.zeros((n_obs, n_labs))
+    sp_c = np.zeros(sp_p.shape)
 
-        counts = np.array(adata.X)
-        rowSums = counts.sum(axis=1, keepdims=True)
-        X_norm_prof = np.divide(counts, rowSums, where=rowSums > 0)
+    for s in range(n_obs):
+        n_umis = rng.integers(umi_lb, umi_ub)
 
-        for bead_index in range(num_of_beads):
-            allocation = rng.multinomial(bead_depth, props[bead_index, :], size=1)[0]
-            true_proportion[bead_index, :] = allocation.copy()
-            for j in range(n_types):
-                cell_index = cells_to_sample_from_celltype[j][
-                    cell_association[bead_index, j]
-                ]
-                print(cell_index)
-                gene_exp = rng.multinomial(
-                    allocation[j], X_norm_prof[cell_index, :], size=1
-                )[0]
-                bead_to_gene_matrix[bead_index, :] += gene_exp
-    else:
-        raise ValueError(f"{sim_type} is not a valid key for `sim_type`.")
+        raw_s = rng.multinomial(n_cells[s], pvals=sp_props[s, :])
+        sp_c[s, :] = raw_s
+        prop_s = raw_s / n_cells[s]
+        sp_p[s, :] = prop_s
 
-    bead_barcodes = np.arange(num_of_beads)
+        pool_s = np.zeros(n_genes)
 
-    adata_spatial = AnnData(
-        bead_to_gene_matrix,
-        obs=dict(obs_names=bead_barcodes),
+        for l, n in enumerate(raw_s):
+            idx_sl = rng.choice(label_indices[uni_labs[l]], size=n)
+            pool_s += X[idx_sl, :].sum(axis=0)
+
+        pool_s /= pool_s.sum()
+        sp_x[s, :] = rng.multinomial(
+            n_umis,
+            pool_s,
+        )
+
+    obs_names = ["spatial_{}".format(x) for x in range(n_obs)]
+    adata_spatial = ad.AnnData(
+        sp_x,
+        obs=dict(obs_names=obs_names),
         var=dict(var_names=adata.var_names),
-    )
-
-    true_proportion = true_proportion / true_proportion.sum(1)[:, np.newaxis].astype(
-        "float64"
     )
 
     # fake coordinates
     adata_spatial.obsm["spatial"] = rng.random((adata_spatial.shape[0], 2))
-    adata_spatial.obsm["proportions_true"] = true_proportion
+    adata_spatial.obsm["proportions_true"] = pd.DataFrame(
+        sp_p,
+        index=obs_names,
+        columns=uni_labs,
+    )
+    adata_spatial.obs["n_cells"] = n_cells
+    adata_spatial.obsm["n_cells"] = pd.DataFrame(
+        sp_c,
+        index=obs_names,
+        columns=uni_labs,
+    )
 
-    adata_spatial.uns["sc_reference"] = adata.copy()
+    adata_spatial.uns["sc_reference"] = dict(
+        counts=adata.to_df(),
+        label=adata.obs[type_column],
+    )
 
     return adata_spatial
+
+
+def reconstruct_sc_adata(
+    sc_dict: Dict[str, Union[pd.DataFrame, pd.Series]]
+) -> ad.AnnData:
+    sc_adata = ad.AnnData(sc_dict["counts"])
+    sc_adata.obs["label"] = sc_dict["label"]
+    return sc_adata
