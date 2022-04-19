@@ -50,12 +50,12 @@ def tangram_simple(adata, test=False, num_epochs=1000, n_markers=100):
     )
 
     # transfer labels from mapped cells to spatial location
-    tg.project_cell_annotations(adata_map = ad_map, adata_sp = adata, annotation="label")
+    tg.project_cell_annotations(adata_map=ad_map, adata_sp=adata, annotation="label")
 
-    # normalize scores 
+    # normalize scores
     pred_props = adata.obsm["tangram_ct_pred"].copy()
-    pred_props_sum = pred_props.values.sum(axis=1,keepdims = True)
-    adata.obsm["proportions_pred"] = pred_props.iloc[:,:] / pred_props_sum
+    pred_props_sum = pred_props.values.sum(axis=1, keepdims=True)
+    adata.obsm["proportions_pred"] = pred_props.iloc[:, :] / pred_props_sum
 
     # remove un-normalized predictions
     del adata.obsm["tangram_ct_pred"]
