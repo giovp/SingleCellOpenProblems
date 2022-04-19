@@ -18,7 +18,6 @@ def generate_synthetic_dataset(
     umi_ub: int = 5000,
     seed: int = 42,
 ) -> ad.AnnData:
-
     """Create cell-aggregate samples for ground-truth spatial decomposition task.
 
     Parameters
@@ -90,8 +89,8 @@ def generate_synthetic_dataset(
 
         pool_s = np.zeros(n_genes)
 
-        for l, n in enumerate(raw_s):
-            idx_sl = rng.choice(label_indices[uni_labs[l]], size=n)
+        for lab, n in enumerate(raw_s):
+            idx_sl = rng.choice(label_indices[uni_labs[lab]], size=n)
             pool_s += X[idx_sl, :].sum(axis=0)
 
         pool_s /= pool_s.sum()
