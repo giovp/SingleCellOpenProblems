@@ -1,3 +1,5 @@
+from ._utils import categorical
+from ._utils import get_mean_normal
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
@@ -5,8 +7,6 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.neighbors import kneighbors_graph
 from torch.distributions import Gamma
-from utils import categorical
-from utils import get_mean_normal
 
 import anndata
 import matplotlib.pyplot as plt
