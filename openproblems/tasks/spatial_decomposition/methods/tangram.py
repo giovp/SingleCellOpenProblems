@@ -12,7 +12,7 @@ from ....tools.utils import check_version
     image="openproblems-python-extras",
 )
 def tangram_simple(adata, test=False):
-    # analysis based on: https://github.com/broadinstitute/Tangram/blob/master/tutorial_tangram_with_squidpy.ipynb
+    # analysis based on: https://github.com/broadinstitute/Tangram/blob/master/tutorial_tangram_with_squidpy.ipynb #noqa: E501
     # using tangram from PyPi, not github version
 
     import pandas as pd
