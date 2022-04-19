@@ -15,10 +15,10 @@ def tangram_simple(adata, test=False):
     # analysis based on: https://github.com/broadinstitute/Tangram/blob/master/tutorial_tangram_with_squidpy.ipynb
     # using tangram from PyPi, not github version
 
+    import pandas as pd
+    import scanpy as sc
     import tangram as tg
     import torch as t
-    import scanpy as sc
-    import pandas as pd
 
     ad_sc = adata.uns["sc_reference"].copy()
 
