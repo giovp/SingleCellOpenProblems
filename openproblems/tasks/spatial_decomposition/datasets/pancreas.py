@@ -9,6 +9,9 @@ def pancreas_average(test=False):
     adata.obs["label"] = adata.obs["celltype"]
 
     adata_spatial = generate_synthetic_dataset(adata, sim_type="avg")
+    # make sure index is string; for scanpy compatibility
+    adata_spatial.obs.index = ["spatial_{}".format(x) for x in range(len(adata_spatial))]
+
     return adata_spatial
 
 
@@ -18,4 +21,6 @@ def pancreas_cell(test=False):
     adata.obs["label"] = adata.obs["celltype"]
 
     adata_spatial = generate_synthetic_dataset(adata, sim_type="cell")
+    # make sure index is string; for scanpy compatibility
+    adata_spatial.obs.index = ["spatial_{}".format(x) for x in range(len(adata_spatial))]
     return adata_spatial
