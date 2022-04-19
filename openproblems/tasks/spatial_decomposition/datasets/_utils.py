@@ -37,12 +37,13 @@ def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int 
         adata.X = adata.X.todense()
 
     n_genes = adata.shape[1]
-    n_cells = adata.shape[0]
+    # n_cells = adata.shape[0]
     n_types = len(set(adata.obs["label"].values))
 
     # TODO(make these arguments)
     bead_depth = 1000
-    num_of_beads = n_cells * 2
+    # num_of_beads = n_cells * 2
+    num_of_beads = 1000
     # generate proportion values
     props = rng.dirichlet(np.ones(n_types), num_of_beads)
 
