@@ -1,12 +1,14 @@
 from .._utils import obs_means
 from anndata import AnnData
 from scipy.sparse import csr_matrix
-from typing import Sequence, Union, Dict
+from typing import Dict
+from typing import Sequence
+from typing import Union
 
-import numpy as np
-import scanpy as sc
 import anndata as ad
+import numpy as np
 import pandas as pd
+import scanpy as sc
 
 
 def generate_synthetic_dataset(
@@ -20,7 +22,6 @@ def generate_synthetic_dataset(
     umi_ub: int = 5000,
     seed: int = 42,
 ) -> ad.AnnData:
-
     """Create cell-aggregate samples for ground-truth spatial decomposition task.
 
     Parameters
