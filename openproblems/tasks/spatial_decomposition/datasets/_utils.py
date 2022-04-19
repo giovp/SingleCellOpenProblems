@@ -1,6 +1,3 @@
-from .._utils import obs_means
-from anndata import AnnData
-from scipy.sparse import csr_matrix
 from typing import Dict
 from typing import Sequence
 from typing import Union
@@ -8,7 +5,6 @@ from typing import Union
 import anndata as ad
 import numpy as np
 import pandas as pd
-import scanpy as sc
 
 
 def generate_synthetic_dataset(
@@ -52,11 +48,11 @@ def generate_synthetic_dataset(
         - `adata_spatial.X`: simulated counts (aggregate of sc dataset).
         - `adata_spatial.uns["sc_reference"]`: original sc adata for reference.
         - `adata_spatial.obsm["proportions_true"]`: true proportion values.
-        - `adata_spatial.obsm["n_cells"]`: number of cells from each type at every location
-        - `adata_spatial.obs["proportions_true"]`: total number of cells at each location
+        - `adata_spatial.obsm["n_cells"]`: number of cells from each type at every location # noqa: 501
+        - `adata_spatial.obs["proportions_true"]`: total number of cells at each location # noqa: 501
 
     The cell type labels are stored in adata_sc.obs["label"].
-    """
+
     rng = np.random.default_rng(seed)
 
     X = adata.X
