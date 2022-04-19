@@ -6,6 +6,30 @@ import numpy as np
 import scanpy as sc
 
 
+def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int = 42):
+    """Create cell-aggregate samples for ground-truth spatial decomposition task.
+
+    Parameters
+    ----------
+    adata : AnnData
+        Anndata object.
+    sim_type : str
+        Simulation type: either average `'avg'` or per cell `'cell'`.
+    seed: int
+        Seed for rng.
+
+    Returns
+    -------
+    AnnData with:
+        - `adata_spatial.obsm["proportions_true"]`: true proportion values.
+        - `adata_spatial.X`: simulated counts (aggregate of sc dataset).
+        - `adata_spatial.uns["sc_reference"]`: original sc adata for reference.
+
+    The cell type labels are stored in adata_sc.obs["label"].
+    """
+
+
+
 # pass the reference data
 def generate_synthetic_dataset(adata: AnnData, sim_type: str = "avg", seed: int = 42):
     """Create cell-aggregate samples for ground-truth spatial decomposition task.
