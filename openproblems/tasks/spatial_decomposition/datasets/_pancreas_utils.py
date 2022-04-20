@@ -1,6 +1,5 @@
 import anndata as ad
 import numpy as np
-import scanpy as sc
 
 
 def get_pancreas_integer(adata: ad.AnnData):
