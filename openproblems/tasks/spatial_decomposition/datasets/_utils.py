@@ -19,7 +19,6 @@ def generate_synthetic_dataset(
     umi_ub: int = 5000,
     seed: int = 42,
 ) -> ad.AnnData:
-
     """Create cell-aggregate samples for ground-truth spatial decomposition task.
 
     Parameters
