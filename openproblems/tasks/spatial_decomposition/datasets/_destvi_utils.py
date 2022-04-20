@@ -7,6 +7,7 @@ from sklearn.neighbors import kneighbors_graph
 from torch.distributions import Gamma
 from utils import categorical
 from utils import get_mean_normal
+from .._utils import merge_sc_and_sp
 
 import anndata
 import matplotlib.pyplot as plt
@@ -184,7 +185,6 @@ def generate_synthetic_dataset(
         st_anndata.obsm["n_counts"] = np.sum(st_anndata.X, axis=1)
         st_anndata.uns["key_clustering"] = key_list
         st_anndata.uns["target_list"] = [1] + target_list
-        st_anndata.uns["sc_reference"] = sc_anndata
         # st_anndata.write(output_dir + file_name[i], compression="gzip")
         if i == 0:
             plt.figure(figsize=(5, 5))
@@ -194,7 +194,10 @@ def generate_synthetic_dataset(
             plt.title(f"bin-sampling={bin_sampling}")
             plt.tight_layout()
             # plt.savefig(output_dir+"lib.png")
-    return st_anndata
+
+        merged_anndata = merge_sc_and_sp(sc_anndata,st_anndata)
+
+    return merged_anndata
 
 
 def generate_spatial_information(
