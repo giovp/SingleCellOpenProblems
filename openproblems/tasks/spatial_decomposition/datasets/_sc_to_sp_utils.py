@@ -1,4 +1,3 @@
-from scipy.stats import multivariate_hypergeom
 from typing import Dict
 from typing import Sequence
 from typing import Union
@@ -122,16 +121,11 @@ def generate_synthetic_dataset(
 
         # number of UMIs at spot s
         n_umis = rng.integers(umi_lb, umi_ub)
-        # compute total molecules in pool
-        sum_pool_s = sum(pool_s)
-        # adjust UMIs to sample if necessary
-        if n_umis > sum_pool_s:
-            n_umis = sum_pool_s
+        # compute probability of sampling UMI from gene
+        prob_pool_s = pool_s / pool_s.sum()
 
         # sample transcripts from pool
-        sp_x[s, :] = multivariate_hypergeom.rvs(
-            pool_s.astype(int), int(n_umis), random_state=rng
-        )
+        sp_x[s, :] = np.random.multinomial(n=n_umis, pvals=prob_pool_s)
 
     obs_names = ["spatial_{}".format(x) for x in range(n_obs)]
     adata_spatial = ad.AnnData(
