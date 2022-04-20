@@ -1,6 +1,5 @@
 from typing import Tuple
-
-from typing import TypedDict, Tuple
+from typing import TypedDict
 
 import anndata as ad
 import numpy as np
@@ -78,7 +77,7 @@ def obs_means(adata: ad.AnnData, cluster_key: str) -> ad.AnnData:
     means = np.empty((labels.shape[0], adata.shape[1]))
     for i, lab in enumerate(labels):
         means[i, :] = adata[adata.obs[cluster_key] == lab].X.mean(axis=0).flatten()
-    adata_means = AnnData(means)
+    adata_means = ad.AnnData(means)
     adata_means.obs_names = labels
     adata_means.var_names = adata.var_names
 
