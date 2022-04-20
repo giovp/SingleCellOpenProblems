@@ -1,3 +1,4 @@
+from .._utils import merge_sc_and_sp
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
@@ -7,14 +8,12 @@ from sklearn.neighbors import kneighbors_graph
 from torch.distributions import Gamma
 from utils import categorical
 from utils import get_mean_normal
-from .._utils import merge_sc_and_sp
 
 import anndata
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
-
 
 np.random.seed(0)
 
@@ -196,7 +195,7 @@ def generate_synthetic_dataset(
             plt.tight_layout()
             # plt.savefig(output_dir+"lib.png")
 
-        merged_anndata = merge_sc_and_sp(sc_anndata,st_anndata)
+        merged_anndata = merge_sc_and_sp(sc_anndata, st_anndata)
 
     return merged_anndata
 

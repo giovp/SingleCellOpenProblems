@@ -20,7 +20,7 @@ def nnls_scipy(adata, test=False):
     from scipy.optimize import nnls
     from scipy.sparse import issparse
 
-    adata_sc,adata = split_sc_and_sp(adata)
+    adata_sc, adata = split_sc_and_sp(adata)
     labels = adata_sc.obs["label"].cat.categories
     adata_means = obs_means(adata_sc, "label")
 

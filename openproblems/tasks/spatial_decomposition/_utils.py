@@ -1,9 +1,9 @@
+from typing import Tuple
+
+from typing import TypedDict, Tuple
+
 import anndata as ad
 import numpy as np
-
-# from typing import TypedDict, Tuple
-from typing_extensions import TypedDict
-from typing import Tuple
 
 
 class SpScBC(TypedDict):
@@ -69,7 +69,6 @@ def split_sc_and_sp(
         del adata_sc.obsm[col]
 
     return (adata_sc, adata_sp)
-
 
 
 def obs_means(adata: ad.AnnData, cluster_key: str) -> ad.AnnData:

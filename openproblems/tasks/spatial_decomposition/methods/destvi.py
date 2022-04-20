@@ -16,7 +16,7 @@ def destvi_raw(adata, test=False):
     from scvi.model import CondSCVI
     from scvi.model import DestVI
 
-    adata_sc,adata_sp = split_sc_and_sp(adata)
+    adata_sc, adata_sp = split_sc_and_sp(adata)
     CondSCVI.setup_anndata(adata_sc, labels_key="label", layer=None)
     sc_model = CondSCVI(adata_sc, weight_obs=False)
     sc_model.train()

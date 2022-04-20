@@ -1,7 +1,7 @@
 from ....data.pancreas import load_pancreas
 from ....tools.decorators import dataset
-from ._sc_to_sp_utils import get_pancreas_integer
 from ._sc_to_sp_utils import generate_synthetic_dataset
+from ._sc_to_sp_utils import get_pancreas_integer
 
 
 @dataset("Pancreas (alpha=1)")

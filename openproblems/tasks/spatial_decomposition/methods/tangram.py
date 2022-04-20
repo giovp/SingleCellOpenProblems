@@ -23,9 +23,9 @@ def tangram_simple(adata, test=False, num_epochs=1000, n_markers=100):
     import torch as t
 
     # get single cell reference
-    ad_sc,adata = split_sc_and_sp(adata)
+    ad_sc, adata = split_sc_and_sp(adata)
     # pre-process single cell data
-    sc.pp.normalize_total(ad_sc,1e4)
+    sc.pp.normalize_total(ad_sc, 1e4)
     sc.pp.log1p(ad_sc)
     # identify marker genes
     sc.tl.rank_genes_groups(ad_sc, groupby="label", use_raw=False)

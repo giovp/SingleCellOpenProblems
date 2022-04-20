@@ -33,7 +33,7 @@ def nmfreg(adata, test=False):
     from sklearn.decomposition import NMF
     from sklearn.preprocessing import StandardScaler
 
-    adata_sc,adata = split_sc_and_sp(adata)
+    adata_sc, adata = split_sc_and_sp(adata)
 
     n_types = adata_sc.obs["label"].cat.categories.shape[0]
 
