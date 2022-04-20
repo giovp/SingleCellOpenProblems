@@ -5,6 +5,7 @@ from typing import Union
 import anndata as ad
 import numpy as np
 import pandas as pd
+from scipy.stats import multivariate_hypergeom
 
 
 def generate_synthetic_dataset(
@@ -56,47 +57,77 @@ def generate_synthetic_dataset(
     The cell type labels are stored in adata_sc.obs["label"].
     """
 
+    # set random generator seed
     rng = np.random.default_rng(seed)
 
+    # get single cell expression data
     X = adata.X
+    # get cell annotations/labels
     labels = adata.obs[type_column].values
+    # get unique labels
     uni_labs = np.unique(labels)
+    # count number of labels
     n_labs = len(uni_labs)
+    # get number of genes
     n_genes = adata.shape[1]
 
+    # create dict with indices of each label
     label_indices = dict()
-
     for label in uni_labs:
         label_indices[label] = np.where(labels == label)[0]
 
+    # adjust alpha to vector if single scalar
     if not hasattr(alpha, "__len__"):
         alpha = np.ones(n_labs) * alpha
+    else:
+        assert len(alpha) == n_labs, "alpha must be same size as number of cell types"
 
+    # generate probability of sampling label at each spot
     sp_props = rng.dirichlet(alpha, size=n_obs)
+    # number of cells present at each spot
     n_cells = rng.integers(cell_lb, cell_ub, size=n_obs)
 
+    # initialize spatial expression matrix
     sp_x = np.zeros((n_obs, n_genes))
+    # initialize spatial proportion matrix
     sp_p = np.zeros((n_obs, n_labs))
+    # initialize spatial cell number matrix
     sp_c = np.zeros(sp_p.shape)
 
+    # generate expression vector for each spot (s)
     for s in range(n_obs):
-        n_umis = rng.integers(umi_lb, umi_ub)
-
+        # number of cells from each label at s
         raw_s = rng.multinomial(n_cells[s], pvals=sp_props[s, :])
+        # store number of cells from each type at s
         sp_c[s, :] = raw_s
+        # compute proportion of each type at s
         prop_s = raw_s / n_cells[s]
+        # store proportion of each type at s
         sp_p[s, :] = prop_s
 
+        # initialize transcript pool at s
         pool_s = np.zeros(n_genes)
 
+        # add molecules to transcript pool
         for lab, n in enumerate(raw_s):
+            # get indices of cells from which transcripts should be added
             idx_sl = rng.choice(label_indices[uni_labs[lab]], size=n)
+            # add molecules to pool
             pool_s += X[idx_sl, :].sum(axis=0)
 
-        pool_s /= pool_s.sum()
-        sp_x[s, :] = rng.multinomial(
-            n_umis,
-            pool_s,
+        # number of UMIs at spot s
+        n_umis = rng.integers(umi_lb, umi_ub)
+        # compute total molecules in pool
+        sum_pool_s = sum(pool_s)
+        # adjust UMIs to sample if necessary
+        if n_umis < sum_pool_s:
+            n_umis = sum_pool_s
+
+        print(pool_s)
+        print(pool_s.shape)
+        # sample transcripts from pool
+        sp_x[s, :] = multivariate_hypergeom.rvs(
+            pool_s.astype(int), int(n_umis), random_state=rng
         )
 
     obs_names = ["spatial_{}".format(x) for x in range(n_obs)]
