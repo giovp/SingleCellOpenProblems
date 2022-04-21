@@ -1,4 +1,5 @@
 from .._utils import merge_sc_and_sp
+from numba import jit
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
@@ -6,8 +7,6 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.neighbors import kneighbors_graph
 from torch.distributions import Gamma
-from utils import categorical
-from utils import get_mean_normal
 
 import anndata
 import matplotlib.pyplot as plt
@@ -19,6 +18,36 @@ np.random.seed(0)
 
 
 torch.manual_seed(0)
+
+
+def categorical(p, n_samples):
+    size = list(p.shape[:-1])
+    size.insert(0, n_samples)
+    return (p.cumsum(-1) >= np.random.uniform(size=size)[..., None]).argmax(-1).T
+
+
+@jit(nopython=True)
+def get_mean_normal(cell_types, gamma, mean_, components_):
+    """Util for preparing the mean of the normal distribution.
+
+    cell_types: (n_spots, n_cells)
+    gamma: (n_spots, n_cells, n_latent)
+
+    return: samples: (n_spots, n_cells, n_genes)
+    """
+    # extract shapes
+    n_spots = gamma.shape[0]
+    n_cells = gamma.shape[1]
+    n_genes = components_[0].shape[1]
+
+    mean_normal = np.zeros((n_spots, n_cells, n_genes))
+    for spot in range(n_spots):
+        for cell in range(n_cells):
+            mean_normal[spot, cell] = mean_[cell_types[spot, cell]]
+            c = components_[cell_types[spot, cell]]
+            g = np.expand_dims(gamma[spot, cell], 0)
+            mean_normal[spot, cell] += np.dot(g, c)[0]
+    return mean_normal
 
 
 def generate_synthetic_dataset(
