@@ -127,7 +127,7 @@ def generate_synthetic_dataset(
 
     obs_names = ["spatial_{}".format(x) for x in range(n_obs)]
     adata_spatial = ad.AnnData(
-        sp_x,
+        csr_matrix(sp_x),
         obs=dict(obs_names=obs_names),
         var=dict(var_names=adata.var_names),
     )
