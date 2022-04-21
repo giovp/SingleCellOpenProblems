@@ -8,5 +8,5 @@ umap-learn
 phate
 pyensembl
 pybedtools
-scvi-tools>=0.9.1
 tangram-sc==1.0.2
+scvi-tools>=0.16.0
