@@ -164,6 +164,6 @@ def get_pancreas_integer(adata: ad.AnnData):
         idx = adata.obs.tech.values == tech
         keep = keep | idx
 
-    adata = adata[keep, :]
+    adata = adata[keep, :].copy()
     adata.X = adata.X
     return adata
