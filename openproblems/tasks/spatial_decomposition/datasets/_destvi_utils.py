@@ -1,6 +1,6 @@
 """
 From:
-https://github.com/romain-lopez/DestVI-reproducibility/blob/master/simulations/utils.py
+https://github.com/romain-lopez/DestVI-reproducibility/blob/master/simulations/
 """
 from .._utils import merge_sc_and_sp
 from numba import jit
