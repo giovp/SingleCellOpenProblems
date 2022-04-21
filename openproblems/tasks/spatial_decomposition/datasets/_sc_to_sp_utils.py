@@ -1,5 +1,5 @@
 from .._utils import merge_sc_and_sp
-from scipy.sparse import issparse
+from scipy.sparse import issparse,csr_matrix
 from typing import Sequence
 from typing import Union
 
@@ -165,5 +165,5 @@ def get_pancreas_integer(adata: ad.AnnData):
         keep = keep | idx
 
     adata = adata[keep, :].copy()
-    adata.X = adata.X
+
     return adata
