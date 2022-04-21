@@ -14,9 +14,9 @@ def merge_sc_and_sp(
     adata_merged = ad.concat(
         {"sp": adata_sp, "sc": adata_sc},
         label=batch_key,
-        join = "outer",
+        join="outer",
         index_unique=None,
-        )
+    )
 
     return adata_merged
 
