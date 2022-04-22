@@ -29,7 +29,7 @@ def split_sc_and_sp(
     # split single cell and spatial data
     is_sp = adata_merged.obs[batch_key] == "sp"
     adata_sp = adata_merged[is_sp, :].copy()
-    adata_sc = adata_merged[~is_sp, :]
+    adata_sc = adata_merged[~is_sp, :].copy()
 
     return (adata_sc, adata_sp)
 
