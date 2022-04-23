@@ -61,7 +61,7 @@ def generate_synthetic_dataset(
     lam_gam: float = 0.5,
     sf_gam: float = 15.0,
     bin_sampling: float = 1.0,
-    ct_study: int = 1,
+    ct_study: int = 0,
     grid_size: int = 10,
 ):
     # parameters
@@ -219,16 +219,16 @@ def generate_synthetic_dataset(
         st_anndata.uns["key_clustering"] = key_list
         st_anndata.uns["target_list"] = [1] + target_list
         # st_anndata.write(output_dir + file_name[i], compression="gzip")
-        if i == 0:
-            plt.figure(figsize=(5, 5))
-            plt.hist(st_anndata.obsm["n_counts"], bins=100)
-            plt.xlabel("Number of UMIs")
-            plt.ylabel("Number of spots")
-            plt.title(f"bin-sampling={bin_sampling}")
-            plt.tight_layout()
-            # plt.savefig(output_dir+"lib.png")
+        # if i == 0:
+        #     plt.figure(figsize=(5, 5))
+        #     plt.hist(st_anndata.obsm["n_counts"], bins=100)
+        #     plt.xlabel("Number of UMIs")
+        #     plt.ylabel("Number of spots")
+        #     plt.title(f"bin-sampling={bin_sampling}")
+        #     plt.tight_layout()
+        # plt.savefig(output_dir+"lib.png")
 
-        merged_anndata = merge_sc_and_sp(sc_anndata, st_anndata)
+    merged_anndata = merge_sc_and_sp(sc_anndata, st_anndata)
 
     return merged_anndata
 
