@@ -62,7 +62,7 @@ def generate_synthetic_dataset(
     rng = np.random.default_rng(seed)
 
     # get single cell expression data
-    X = adata.X.A
+    X = adata.X
     if issparse(X):
         X = X.toarray()
     # get cell annotations/labels
