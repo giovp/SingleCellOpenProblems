@@ -12,7 +12,7 @@ from .._utils import split_sc_and_sp
     code_version=check_version("tangram-sc"),
     image="openproblems-python-extras",
 )
-def tangram_simple(adata, test=False, num_epochs=1000, n_markers=100):
+def tangram(adata, test=False, num_epochs=1000, n_markers=100):
     # analysis based on: https://github.com/broadinstitute/Tangram/blob/master/tutorial_tangram_with_squidpy.ipynb # noqa: E501
     # using tangram from PyPi, not github version
 
