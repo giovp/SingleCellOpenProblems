@@ -146,6 +146,7 @@ def generate_synthetic_dataset(
         columns=uni_labs,
     )
     adata_merged = merge_sc_and_sp(adata, adata_spatial)
+    adata_merged.layers["counts"] = adata_merged.X.copy()
 
     return adata_merged
 
