@@ -2,6 +2,7 @@ from typing import Tuple
 
 import anndata as ad
 import numpy as np
+import pandas as pd
 
 
 def merge_sc_and_sp(
@@ -9,6 +10,15 @@ def merge_sc_and_sp(
     adata_sp: ad.AnnData,
     batch_key: str = "modality",
 ) -> ad.AnnData:
+
+    for k in adata_sp.obsm.keys():
+        if isinstance(adata_sp.obsm[k], pd.DataFrame):
+            n_col = adata_sp.obsm[k].shape[1]
+            n_row = adata_sc.shape[0]
+            df = pd.DataFrame(np.zeros((n_row, n_col)))
+            df.index = adata_sc.obs.index.values
+            df.columns = adata_sp.obsm[k].columns
+            adata_sc.obsm[k] = df
 
     # merge single cell and spatial data
     adata_merged = ad.concat(

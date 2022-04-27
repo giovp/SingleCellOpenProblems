@@ -146,7 +146,6 @@ def generate_synthetic_dataset(
         index=obs_names,
         columns=uni_labs,
     )
-
     adata_merged = merge_sc_and_sp(adata, adata_spatial)
 
     return adata_merged
