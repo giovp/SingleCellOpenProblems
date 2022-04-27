@@ -4,7 +4,6 @@ https://github.com/romain-lopez/DestVI-reproducibility/blob/master/simulations/
 """
 from .._utils import merge_sc_and_sp
 from numba import jit
-from scipy.sparse import csr_matrix
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
 from sklearn.cluster import AgglomerativeClustering
@@ -125,7 +124,7 @@ def generate_synthetic_dataset(
     samples = np.random.poisson(lam=transformed_mean)
 
     sc_anndata = anndata.AnnData(
-        X=csr_matrix(samples[:, :K_sampled].reshape((-1, samples.shape[-1])))
+        X=samples[:, :K_sampled].reshape((-1, samples.shape[-1]))
     )
     sc_anndata.obs["cell_type"] = cell_types_sc[:, :K_sampled].reshape(-1, 1)
     sc_anndata.obs["label"] = sc_anndata.obs["cell_type"].astype(str).astype("category")
@@ -201,7 +200,7 @@ def generate_synthetic_dataset(
         samples_st = np.random.poisson(lam=mean_st)
         samples_st = np.random.binomial(samples_st, bin_sampling)
 
-        st_anndata = anndata.AnnData(X=csr_matrix(samples_st))
+        st_anndata = anndata.AnnData(X=samples_st)
         if i == 0:
             altered_freq = freq_sample
         if i > 0:

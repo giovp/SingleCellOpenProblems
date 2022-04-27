@@ -1,5 +1,4 @@
 from .._utils import merge_sc_and_sp
-from scipy.sparse import csr_matrix
 from scipy.sparse import issparse
 from typing import Sequence
 from typing import Union
@@ -128,7 +127,7 @@ def generate_synthetic_dataset(
 
     obs_names = ["spatial_{}".format(x) for x in range(n_obs)]
     adata_spatial = ad.AnnData(
-        csr_matrix(sp_x),
+        sp_x,
         obs=dict(obs_names=obs_names),
         var=dict(var_names=adata.var_names),
     )
