@@ -11,6 +11,11 @@ WORKDIR /
 COPY ./docker/openproblems-r-extras/r_requirements.txt ./r_requirements.txt
 RUN sudo R -e "renv::install(scan('r_requirements.txt', sep='\n', what=character()))"
 
+# Add geos repository and install geos
+RUN add-apt-repository ppa:ubuntugis/ppa
+RUN apt-get install geos
+
+
 # Install Python packages
 COPY ./docker/openproblems-r-extras/requirements.txt ./requirements.txt
 RUN sudo pip install --no-cache-dir -r requirements.txt
