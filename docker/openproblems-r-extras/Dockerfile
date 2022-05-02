@@ -8,10 +8,10 @@ USER root
 WORKDIR /
 
 # Add geos repository and install geos
-sudo apt-get install python-software-properties
-sudo add-apt-repository ppa:ubuntugis/ppa
+RUN apt-get install python-software-properties
+RUN add-apt-repository ppa:ubuntugis/ppa
 # Install the packages
-sudo apt-get install geos
+RUN apt-get install geos
 
 
 # Install R packages
