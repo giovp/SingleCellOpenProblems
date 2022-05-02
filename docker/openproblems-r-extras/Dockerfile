@@ -7,14 +7,13 @@ ARG NB_GID="100"
 USER root
 WORKDIR /
 
-# Install R packages
-COPY ./docker/openproblems-r-extras/r_requirements.txt ./r_requirements.txt
-RUN sudo R -e "renv::install(scan('r_requirements.txt', sep='\n', what=character()))"
-
 # Add geos repository and install geos
 RUN add-apt-repository ppa:ubuntugis/ppa
 RUN apt-get install geos
 
+# Install R packages
+COPY ./docker/openproblems-r-extras/r_requirements.txt ./r_requirements.txt
+RUN sudo R -e "renv::install(scan('r_requirements.txt', sep='\n', what=character()))"
 
 # Install Python packages
 COPY ./docker/openproblems-r-extras/requirements.txt ./requirements.txt
