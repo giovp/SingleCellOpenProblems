@@ -8,9 +8,11 @@ USER root
 WORKDIR /
 
 # Add geos repository and install geos
-RUN apt-get install software-properties-common
-RUN add-apt-repository ppa:ubuntugis/ppa
-RUN apt-get install geos
+sudo apt-get install python-software-properties
+sudo add-apt-repository ppa:ubuntugis/ppa
+# Install the packages
+sudo apt-get install geos
+
 
 # Install R packages
 COPY ./docker/openproblems-r-extras/r_requirements.txt ./r_requirements.txt
