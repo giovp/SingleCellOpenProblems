@@ -27,10 +27,6 @@ RUN apt-get update -qq
 RUN apt-get install -yq --no-install-suggests --no-install-recommends r-base-dev=4.1\*
 RUN apt-get clean -y && apt-get autoremove -y
 
-# add geos repository and install geos
-RUN add-apt-repository ppa:ubuntugis/ppa
-RUN apt-get install geos
-
 # Install R packages
 RUN R -e "install.packages('renv'); renv::consent(TRUE)"
 COPY ./docker/openproblems-r-base/r_requirements.txt ./r_requirements.txt
