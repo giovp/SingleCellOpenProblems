@@ -15,9 +15,11 @@ def merge_sc_and_sp(
         if isinstance(adata_sp.obsm[k], pd.DataFrame):
             n_col = adata_sp.obsm[k].shape[1]
             n_row = adata_sc.shape[0]
-            df = pd.DataFrame(np.zeros((n_row, n_col)))
-            df.index = adata_sc.obs.index.values
-            df.columns = adata_sp.obsm[k].columns
+            df = pd.DataFrame(
+                np.zeros((n_row, n_col)),
+                columns=adata_sp.obsm[k].columns.copy(),
+                index=adata_sc.obs.index.copy(),
+            )
             adata_sc.obsm[k] = df
 
     # merge single cell and spatial data
@@ -27,6 +29,8 @@ def merge_sc_and_sp(
         join="outer",
         index_unique=None,
     )
+
+    adata_merged.obs["label"] = pd.Categorical(adata_merged.obs["label"])
 
     return adata_merged
 

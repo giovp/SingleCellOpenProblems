@@ -53,7 +53,7 @@ def get_mean_normal(cell_types, gamma, mean_, components_):
     return mean_normal
 
 
-def generate_synthetic_dataset(
+def generate_synthetic_dataset_destvi(
     input_file: str = "_input_data/",
     lam_ct: float = 0.1,
     temp_ct: float = 1.0,
@@ -128,9 +128,10 @@ def generate_synthetic_dataset(
     )
     sc_anndata.obs["cell_type"] = cell_types_sc[:, :K_sampled].reshape(-1, 1)
     sc_anndata.obs["label"] = sc_anndata.obs["cell_type"].astype(str).astype("category")
-    sc_anndata.obs["n_counts"] = np.sum(sc_anndata.X.A, axis=1)
+    sc_anndata.obs["n_counts"] = np.sum(sc_anndata.X, axis=1)
     sc_anndata.obsm["gamma"] = gamma_sc[:, :K_sampled].reshape(-1, gamma.shape[-1])
     sc_anndata.obsm["locations"] = location_sc[:, :K_sampled].reshape(-1, 2)
+    sc_anndata.obs_names = sc_anndata.obs_names + "_sc"
 
     # cluster the single-cell data using sklearn
     target_list = [2, 4, 8, 16]
@@ -138,7 +139,7 @@ def generate_synthetic_dataset(
     hier_labels_sc = np.zeros((sc_anndata.n_obs, len(target_list)))
     for ct in range(C):
         slice_ind = np.where(sc_anndata.obs["cell_type"] == ct)
-        slice_counts = sc_anndata.X[slice_ind].A
+        slice_counts = sc_anndata.X[slice_ind]
         slice_normalized = slice_counts / np.sum(slice_counts, axis=1)[:, np.newaxis]
         slice_embedding = PCA(n_components=10).fit_transform(
             np.log(1 + 1e4 * slice_normalized)
@@ -214,9 +215,10 @@ def generate_synthetic_dataset(
         st_anndata.obsm["proportions_true"] = freq_df
         st_anndata.obsm["gamma"] = gamma
         st_anndata.obsm["locations"] = locations
-        st_anndata.obsm["n_counts"] = np.sum(st_anndata.X, axis=1)
+        st_anndata.obs["n_counts"] = np.sum(st_anndata.X, axis=1)
         st_anndata.uns["key_clustering"] = key_list
         st_anndata.uns["target_list"] = [1] + target_list
+        st_anndata.obs_names = st_anndata.obs_names + "_sp"
         # st_anndata.write(output_dir + file_name[i], compression="gzip")
         # if i == 0:
         #     plt.figure(figsize=(5, 5))
@@ -226,6 +228,9 @@ def generate_synthetic_dataset(
         #     plt.title(f"bin-sampling={bin_sampling}")
         #     plt.tight_layout()
         # plt.savefig(output_dir+"lib.png")
+
+    sc_anndata.layers["counts"] = sc_anndata.X.copy()
+    st_anndata.layers["counts"] = st_anndata.X.copy()
 
     merged_anndata = merge_sc_and_sp(sc_anndata, st_anndata)
 
