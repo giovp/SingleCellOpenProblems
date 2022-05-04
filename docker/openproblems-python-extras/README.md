@@ -16,4 +16,8 @@ Python packages:
 * MulticoreTSNE
 * phate
 * scvi-tools
+* neuralee
+* torch
+* tensorflow-cpu
+* ivis
 * umap-learn
