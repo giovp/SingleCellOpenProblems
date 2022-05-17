@@ -123,15 +123,17 @@ def generate_synthetic_dataset_destvi(
 
     samples = np.random.poisson(lam=transformed_mean)
 
+    X = samples[:, :K_sampled].reshape((-1, samples.shape[-1]))
+    obs_names = [f"sc_{i}" for i in range(X.shape[0])]
     sc_anndata = anndata.AnnData(
-        X=samples[:, :K_sampled].reshape((-1, samples.shape[-1]))
+        X=X,
+        obs=dict(obs_names=obs_names),
     )
     sc_anndata.obs["cell_type"] = cell_types_sc[:, :K_sampled].reshape(-1, 1)
     sc_anndata.obs["label"] = sc_anndata.obs["cell_type"].astype(str).astype("category")
     sc_anndata.obs["n_counts"] = np.sum(sc_anndata.X, axis=1)
     sc_anndata.obsm["gamma"] = gamma_sc[:, :K_sampled].reshape(-1, gamma.shape[-1])
     sc_anndata.obsm["locations"] = location_sc[:, :K_sampled].reshape(-1, 2)
-    sc_anndata.obs_names = sc_anndata.obs_names + "_sc"
 
     # cluster the single-cell data using sklearn
     target_list = [2, 4, 8, 16]
@@ -200,8 +202,11 @@ def generate_synthetic_dataset_destvi(
 
         samples_st = np.random.poisson(lam=mean_st)
         samples_st = np.random.binomial(samples_st, bin_sampling)
-
-        st_anndata = anndata.AnnData(X=samples_st)
+        obs_names = [f"st_{i}" for i in range(samples_st.shape[0])]
+        st_anndata = anndata.AnnData(
+            X=samples_st,
+            obs=dict(obs_names=obs_names),
+        )
         if i == 0:
             altered_freq = freq_sample
         if i > 0:
@@ -218,7 +223,6 @@ def generate_synthetic_dataset_destvi(
         st_anndata.obs["n_counts"] = np.sum(st_anndata.X, axis=1)
         st_anndata.uns["key_clustering"] = key_list
         st_anndata.uns["target_list"] = [1] + target_list
-        st_anndata.obs_names = st_anndata.obs_names + "_sp"
         # st_anndata.write(output_dir + file_name[i], compression="gzip")
         # if i == 0:
         #     plt.figure(figsize=(5, 5))

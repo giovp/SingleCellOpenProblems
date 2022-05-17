@@ -18,7 +18,7 @@ def merge_sc_and_sp(
             df = pd.DataFrame(
                 np.zeros((n_row, n_col)),
                 columns=adata_sp.obsm[k].columns.copy(),
-                index=adata_sc.obs.index.copy(),
+                index=adata_sc.obs_names.copy(),
             )
             adata_sc.obsm[k] = df
 
