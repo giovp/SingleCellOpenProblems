@@ -182,6 +182,13 @@ jobs:
         snakemake -j $(nproc) docker
         cd ..
 
+    - name: Update Docker images
+      if: "!(startsWith(github.ref, 'refs/heads/main') && github.repository == 'openproblems-bio/openproblems')"
+      run: |
+        cd workflow
+        snakemake -j $(nproc) docker
+        cd ..
+
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
       with:
