@@ -5,7 +5,7 @@ from ._sc_to_sp_utils import get_pancreas_integer
 
 
 @dataset("Pancreas (alpha=1)")
-def pancreas_alpha_1(test=False, n_obs=500):
+def pancreas_alpha_1(test=False, n_obs=200):
     adata = load_pancreas(test=False)
     adata = get_pancreas_integer(adata)
     adata.obs["label"] = adata.obs["celltype"]
@@ -15,7 +15,7 @@ def pancreas_alpha_1(test=False, n_obs=500):
 
 
 @dataset("Pancreas (alpha=5)")
-def pancreas_alpha_5(test=False, n_obs=500):
+def pancreas_alpha_5(test=False, n_obs=200):
     adata = load_pancreas(test=False)
     adata = get_pancreas_integer(adata)
     adata.obs["label"] = adata.obs["celltype"]
@@ -25,7 +25,7 @@ def pancreas_alpha_5(test=False, n_obs=500):
 
 
 @dataset("Pancreas (alpha=0.5)")
-def pancreas_alpha_0_1(test=False, n_obs=500):
+def pancreas_alpha_0_1(test=False, n_obs=200):
     adata = load_pancreas(test=False)
     adata = get_pancreas_integer(adata)
     adata.obs["label"] = adata.obs["celltype"]
