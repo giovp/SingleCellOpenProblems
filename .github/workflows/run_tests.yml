@@ -182,6 +182,11 @@ jobs:
         snakemake -j $(nproc) docker
         cd ..
 
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
+
     - name: Run tests
       run: pytest --cov=openproblems --cov-report=term-missing:skip-covered --cov-report=xml -vv --maxfail=2
 
