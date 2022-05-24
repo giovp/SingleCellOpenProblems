@@ -1,5 +1,6 @@
 from .._utils import merge_sc_and_sp
-from scipy.sparse import issparse
+
+# from scipy.sparse import issparse
 from typing import Sequence
 from typing import Union
 
@@ -62,8 +63,8 @@ def generate_synthetic_dataset(
 
     # get single cell expression data
     X = adata.X.copy()
-    if issparse(X):
-        X = X.toarray()
+    # if issparse(X):
+    #     X = X.toarray()
     # get cell annotations/labels
     labels = adata.obs[type_column].values
     # get unique labels
