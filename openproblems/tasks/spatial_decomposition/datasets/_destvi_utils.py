@@ -30,7 +30,7 @@ def categorical(p, n_samples):
 
 
 @jit(nopython=True)
-def get_mean_normal(cell_types, gamma, mean_, components_):
+def get_mean_normal(cell_types, gamma, mean_, components_):  # pragma: no cover
     """Util for preparing the mean of the normal distribution.
 
     cell_types: (n_spots, n_cells)
@@ -85,17 +85,6 @@ def generate_synthetic_dataset_destvi(
         sf_gam=sf_gam,
         savefig=False,
     )
-
-    # put together a summary of distinct cell types per spot
-    cell_types_sc = categorical(freq_sample, 10)
-    x = np.sort(cell_types_sc, axis=1)
-    res = (x[:, 1:] != x[:, :-1]).sum(axis=1) + 1
-    plt.hist(res, bins=np.linspace(0, C, 20))
-    plt.xlabel("Number of cell types")
-    plt.ylabel("Number of spots")
-    plt.title(f"temp-ct={temp_ct}")
-    plt.tight_layout()
-    # plt.savefig(output_dir+"fre.png")
 
     cell_types_sc = categorical(freq_sample, K)
     gamma_sc = gamma[:, None, :].repeat(K, axis=1)
@@ -190,7 +179,6 @@ def generate_synthetic_dataset_destvi(
     elif ct_study == 0:
 
         list_transformed = [transformed_mean_st_full]
-    # file_name = ["st_simu.h5ad", "st_simu_partial.h5ad"]
     for i, transformed_mean_st in enumerate(list_transformed):
         # Important remark: Gamma is parametrized by the rate = 1/scale!
         gamma_st = Gamma(
@@ -223,15 +211,6 @@ def generate_synthetic_dataset_destvi(
         st_anndata.obs["n_counts"] = np.sum(st_anndata.X, axis=1)
         st_anndata.uns["key_clustering"] = key_list
         st_anndata.uns["target_list"] = [1] + target_list
-        # st_anndata.write(output_dir + file_name[i], compression="gzip")
-        # if i == 0:
-        #     plt.figure(figsize=(5, 5))
-        #     plt.hist(st_anndata.obsm["n_counts"], bins=100)
-        #     plt.xlabel("Number of UMIs")
-        #     plt.ylabel("Number of spots")
-        #     plt.title(f"bin-sampling={bin_sampling}")
-        #     plt.tight_layout()
-        # plt.savefig(output_dir+"lib.png")
 
     sc_anndata.layers["counts"] = sc_anndata.X.copy()
     st_anndata.layers["counts"] = st_anndata.X.copy()

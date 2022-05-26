@@ -63,8 +63,6 @@ def generate_synthetic_dataset(
 
     # get single cell expression data
     X = adata.X
-    # if issparse(X):
-    #     X = X.toarray()
     # get cell annotations/labels
     labels = adata.obs[type_column].values
     # get unique labels
@@ -153,9 +151,12 @@ def generate_synthetic_dataset(
 
 
 def get_pancreas_integer(adata: ad.AnnData):
-    # for some platforms the pancreas data set
-    # only have processed counts. Here we grab those
-    # with integer counts. See: https://github.com/theislab/scib-reproducibility/tree/main/notebooks/data_preprocessing/pancreas # noqa: 501
+    """Transform counts to integer.
+
+    For some platforms the pancreas data set only have processed counts.
+    Here we grab those with integer counts.
+    See: https://github.com/theislab/scib-reproducibility/tree/main/notebooks/data_preprocessing/pancreas. # noqa: E501
+    """
     is_int = ["smartseq2"]
     is_int += ["inDrop{}".format(x) for x in range(1, 5)]
 

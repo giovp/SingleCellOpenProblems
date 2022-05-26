@@ -20,14 +20,13 @@ spatial data. We require that all datasets have an associated reference single
 cell data set, but methods are free to ignore this information.
 
 
-## Datasets and API
+## API
 
 Datasets consists of 2 `anndata.AnnData` objects, concatenated by key `adata.obs["modality"]` with values:
 * `sc` for the single cell reference.
 * `sp` for the target spatial dataset.
 
 In the single cell reference, cell-types are stored in `adata_sc.obs["label"]`.
-In the spatial target, ground-truth cell-type proportions are stored in `adata_spatial.obsm["proportions_true"]`.
 In the spatial target, ground-truth cell-type proportions are stored in `adata_spatial.obsm["proportions_true"]`.
 Methods should return inferred proportions stored in `adata_spatial.obsm["proportions_pred"]`.
 Metrics shall compare `adata_spatial.obsm['proportions_pred']` to `adata_spatial.obsm['proportions_true']`.
