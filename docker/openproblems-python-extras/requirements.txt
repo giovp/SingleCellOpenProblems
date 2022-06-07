@@ -1,17 +1,30 @@
+cmake==3.18.4
 git+https://github.com/atong01/SCOT
 git+https://github.com/czbiohub/molecular-cross-validation
+git+https://github.com/czbiohub/molecular-cross-validation
 git+https://github.com/KrishnaswamyLab/harmonic-alignment#subdirectory=python
+git+https://github.com/KrishnaswamyLab/harmonic-alignment#subdirectory=python
+git+https://github.com/michalk8/neuralee@master  # contains gradient error fix
+git+https://github.com/michalk8/neuralee@master  # contains gradient error fix
 magic-impute
-cmake==3.18.4
+magic-impute
 MulticoreTSNE
-umap-learn
+MulticoreTSNE
 phate
-pyensembl
+phate
+pybedtools
 pybedtools
 tangram-sc==1.0.2
+pyensembl
+pyensembl
 scvi-tools>=0.16.0
+tensorflow-cpu==2.7.2
+tensorflow-cpu==2.7.2
 torch
 git+https://github.com/michalk8/neuralee@master  # contains gradient error fix
 tensorflow-cpu==2.7.2
 git+https://github.com/czbiohub/molecular-cross-validation
 anndata>=0.7.6,<0.8
+torch
+umap-learn
+umap-learn
