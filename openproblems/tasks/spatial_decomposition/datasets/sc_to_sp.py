@@ -7,10 +7,12 @@ from ._sc_to_sp_utils import get_pancreas_integer
 @dataset("Pancreas (alpha=1)")
 def pancreas_alpha_1(test=False, n_obs=10):
     adata = load_pancreas(test=test)
+    from_cache = adata.__from_cache__
     adata = get_pancreas_integer(adata)
     adata.obs["label"] = adata.obs["celltype"]
 
     merged_adata = generate_synthetic_dataset(adata, n_obs=n_obs, alpha=1)
+    merged_adata.__from_cache__ = from_cache
     return merged_adata
 
 
