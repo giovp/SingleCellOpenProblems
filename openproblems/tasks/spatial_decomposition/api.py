@@ -13,7 +13,15 @@ def check_dataset(adata):
     # check that proportions are included
     assert "proportions_true" in adata.obsm
     # make sure proportions sum to one, some precision error allowed
-    assert np.all(np.abs(np.sum(adata.obsm["proportions_true"], axis=1) - 1) < EPS)
+    assert np.all(
+        np.abs(
+            np.sum(
+                adata[adata.obs["modality"] == "sp"].obsm["proportions_true"], axis=1
+            )
+            - 1  # noqa: W503
+        )
+        < EPS  # noqa: W503
+    )
     # make sure single cell reference is in uns
     assert "sc_reference" in adata.uns
     # ensure cell type labels are found in single cell reference
