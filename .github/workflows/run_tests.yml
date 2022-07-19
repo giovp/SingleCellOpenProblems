@@ -87,7 +87,7 @@ jobs:
 
     - name: Commit result
       if: env.CHANGED == 'true' && startsWith(github.ref, 'refs/heads/main')
-      uses: EndBug/add-and-commit@v6
+      uses: EndBug/add-and-commit@v9
       with:
         author_name: SingleCellOpenProblems
         author_email: singlecellopenproblems@protonmail.com
