@@ -15,13 +15,13 @@ jobs:
       UPDATE_BRANCH_NAME: "auto_update_benchmark_${{ github.run_number }}"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3.1.0
       with:
         fetch-depth: 1
         path: openproblems
 
     - name: Checkout website repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v3.1.0
       with:
         fetch-depth: 0
         repository: openproblems-bio/website
