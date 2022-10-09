@@ -4,7 +4,7 @@ bslib@0.4.0
 caret@6.0-93
 cli@3.3.0
 conos@1.4.6
-crayon@1.5.1
+crayon@1.5.2
 dbplyr@2.2.1
 devtools@2.4.4
 dmcable/spacexr@eeb02a2 # master
